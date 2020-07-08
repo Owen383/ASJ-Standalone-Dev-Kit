@@ -24,7 +24,7 @@ public class LineSegment {
         Point [] pointsArray = new Point [subSegments-1];
         
         for(int i = 0; i < subSegments - 1; i++) {
-            pointsArray[i] = new Point(point1.getX() - deltaX/sub * (i + 1), point1.getY() - deltaY/sub * (i + 1));
+            pointsArray[i] = new Point(point1.getX() - (deltaX/sub) * (i + 1), point1.getY() - (deltaY/sub) * (i + 1));
         }
         
         return pointsArray;

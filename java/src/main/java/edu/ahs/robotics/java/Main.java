@@ -5,6 +5,9 @@ public class Main {
 
         Point a = new Point(0, 0);
         Point b = new Point(3, 6);
+        Point[] ab = new Point[2];
+        ab[0] = a;
+        ab[1] = b;
 
         LineSegment c = new LineSegment(a,b);
 
@@ -24,6 +27,10 @@ public class Main {
         System.out.println(c.midPoint());
 
         System.out.println(c.length());
+
+        Path dummy = new Path(ab);
+
+        dummy.printWayPoints();
     }
 
 }

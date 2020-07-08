@@ -10,7 +10,7 @@ public class LineSegmentTest {
     public void subDivide() {
         Point[] pointsExpected = new Point[0];
         pointsExpected[0] = new Point(1,1);
-        pointsExpected[0] = new Point(2,2);
+        pointsExpected[1] = new Point(2,2);
 
         LineSegment lineSegment = new LineSegment(new Point(0,0), new Point(3,3));
         Point[] pointsActual = lineSegment.subDivide(3);
