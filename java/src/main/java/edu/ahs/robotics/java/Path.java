@@ -49,13 +49,33 @@ public class Path {
      */
 
     private ArrayList<WayPoint> wayPoints;
+    Point j = new Point(0, 0);
+    int counter = 0;
+
 
 
     public Path(Point[] rawPoints){
         wayPoints = new ArrayList<>();
         for(Point i:rawPoints){
-            wayPoints.add(new WayPoint(i));
+            if(i==j) {
+                wayPoints.add(new WayPoint(i));
+                counter++;
+            }else if(i.getX() == 0 && i.getY() == 0){
+                wayPoints.add(new WayPoint(i));
+                counter++;
+            }
+                Point j = i;
+
         }
+
+    }
+    WayPoint[] points = new WayPoint[counter];
+
+    public WayPoint[] returnWayPoints(){
+        for(int i = 0; i<counter; i++){
+            points[i] = wayPoints.get(i);
+        }
+        return points;
     }
 
     public void printWayPoints(){
@@ -64,10 +84,13 @@ public class Path {
         }
     }
 
-
-    public double totalDistance(){
+    public double totalDistance() {
         return 0.0;
     }
+
+
+
+
 
     /**
      * @return a point at the supplied look-ahead distance along the path from the supplied current position
