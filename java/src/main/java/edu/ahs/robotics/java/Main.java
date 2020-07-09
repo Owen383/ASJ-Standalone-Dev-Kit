@@ -3,11 +3,16 @@ package edu.ahs.robotics.java;
 public class Main {
     public static void main(String[] args){
 
-        Point a = new Point(0, 0);
+        Point a = new Point(3, 6);
         Point b = new Point(3, 6);
-        Point[] ab = new Point[2];
+        Point a2 = new Point(4, 3);
+        Point b2 = new Point(2, 9);
+
+        Point[] ab = new Point[4];
         ab[0] = a;
         ab[1] = b;
+        ab[2] = a2;
+        ab[3] = b2;
 
         LineSegment c = new LineSegment(a,b);
 
@@ -31,6 +36,7 @@ public class Main {
         Path dummy = new Path(ab);
 
         dummy.printWayPoints();
+        System.out.println(dummy.totalDistance());
 
 
     }

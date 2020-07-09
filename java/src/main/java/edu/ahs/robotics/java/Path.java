@@ -16,11 +16,13 @@ public class Path {
             this.deltaYFromPrevious = deltaYFromPrevious;
             this.distanceFromPrevious = distanceFromPrevious;
         }
-        private WayPoint(Point point) {
-            this.point = point;
+
+        public double getDistanceFromPrevious() {
+            return distanceFromPrevious;
         }
+
         public String toString() {
-            return "Point{" + "x=" + point.getX() + ", y=" + point.getY() + '}';
+            return "Point{" + "x=" + point.getX() + ", y=" + point.getY() + ", distance from previous = " + distanceFromPrevious + "}";
         }
         /**
          * Calculates the projection of the vector Vcurrent leading from the supplied current
@@ -42,40 +44,37 @@ public class Path {
         }
     }
 
+    private ArrayList<WayPoint> wayPoints;
+    double totalDistance = 0;
     /**
      * @param rawPoints Array of X,Y points.  Consecutive duplicate points are discarded
      *                  A path must have at least 2 non-identical points
      * @throws IllegalArgumentException for paths with fewer than 2 non-duplicate points.
      */
 
-    private ArrayList<WayPoint> wayPoints;
-    Point j = new Point(0, 0);
-    int counter = 0;
-
-
-
     public Path(Point[] rawPoints){
+
+        double deltaXFromPrevious;
+        double deltaYFromPrevious;
+        double distanceFromPrevious;
+
         wayPoints = new ArrayList<>();
-        for(Point i:rawPoints){
-            if(i==j) {
-                wayPoints.add(new WayPoint(i));
-                counter++;
-            }else if(i.getX() == 0 && i.getY() == 0){
-                wayPoints.add(new WayPoint(i));
-                counter++;
+        Point j = rawPoints[0];
+        wayPoints.add(new WayPoint(rawPoints[0], 0, 0, 0));
+
+        for(int i = 1; i<rawPoints.length; i++){
+
+            deltaXFromPrevious = rawPoints[i].getX() - j.getX();
+            deltaYFromPrevious = rawPoints[i].getY() - j.getY();
+            distanceFromPrevious = Math.sqrt(deltaXFromPrevious*deltaXFromPrevious + deltaYFromPrevious*deltaYFromPrevious);
+
+            if(rawPoints[i].getX() != j.getX() || rawPoints[i].getY() != j.getY()) {
+                wayPoints.add(new WayPoint(rawPoints[i], deltaXFromPrevious, deltaYFromPrevious, distanceFromPrevious));
+                totalDistance = totalDistance + distanceFromPrevious;
             }
-                Point j = i;
-
+            j = rawPoints[i];
         }
 
-    }
-    WayPoint[] points = new WayPoint[counter];
-
-    public WayPoint[] returnWayPoints(){
-        for(int i = 0; i<counter; i++){
-            points[i] = wayPoints.get(i);
-        }
-        return points;
     }
 
     public void printWayPoints(){
@@ -85,18 +84,34 @@ public class Path {
     }
 
     public double totalDistance() {
-        return 0.0;
+        return totalDistance;
     }
-
-
-
-
 
     /**
      * @return a point at the supplied look-ahead distance along the path from the supplied current position
      * Note that the point will usually be interpolated between the points that originally defined the Path
      */
     public Path.WayPoint targetPoint(Point current, double lookAheadDistance) {
+        boolean b = true;
+        int i = 0;
+        double distance = 0;
+
+        while(b && i<wayPoints.size()){
+            i++;
+            WayPoint a = wayPoints.get(i-1);
+            WayPoint c = wayPoints.get(i);
+            if (a.componentAlongPath(current) > 0) {
+               b = false;
+            }
+        }
+        while(distance < lookAheadDistance){
+            WayPoint c = wayPoints.get(i);
+            distance = distance + c.getDistanceFromPrevious();
+            i++;
+        }
+        //a and c are our two brackets
+
+
         return new WayPoint(new Point(0,0), 0.0, 0.0, 0.0);
 
     }
