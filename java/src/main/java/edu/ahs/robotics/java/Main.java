@@ -3,10 +3,12 @@ package edu.ahs.robotics.java;
 public class Main {
     public static void main(String[] args){
 
-        Point a = new Point(3, 6);
-        Point b = new Point(3, 6);
-        Point a2 = new Point(4, 3);
-        Point b2 = new Point(2, 9);
+        Point a = new Point(-9, -9);
+        Point b = new Point(-8, -7);
+        Point a2 = new Point(-6, -4);
+        Point b2 = new Point(0, 0);
+
+        Point current = new Point(-7,-8);
 
         Point[] ab = new Point[4];
         ab[0] = a;
@@ -38,7 +40,7 @@ public class Main {
         dummy.printWayPoints();
         System.out.println(dummy.totalDistance());
 
+        dummy.printTargetPoint(current, .5);
 
     }
-
 }

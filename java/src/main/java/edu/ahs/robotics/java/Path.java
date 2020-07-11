@@ -102,6 +102,10 @@ public class Path {
         return totalDistance;
     }
 
+    public void printTargetPoint(Point current, double targetDistance){
+        System.out.println(targetPoint(current, targetDistance));
+    }
+
     /**
      * @return a point at the supplied look-ahead distance along the path from the supplied current position
      * Note that the point will usually be interpolated between the points that originally defined the Path
@@ -125,11 +129,13 @@ public class Path {
         while(i<wayPoints.size()-1){
             i++;
             a = wayPoints.get(i);
+            System.out.println(a.componentAlongPath(current)+" "+i);
             if(a.componentAlongPath(current) > 0){
                break;
             }
         }
 
+        //trig stuff
         distance = a.componentAlongPath(current);
         popY = a.componentAlongPath(current) * Math.sin(a.getAngleFromPrevious());
         popX = a.componentAlongPath(current) * Math.cos(a.getAngleFromPrevious());
@@ -138,6 +144,11 @@ public class Path {
         WayPoint shadow = new WayPoint(new Point (a.getX()-popX,a.getY()-popY), a.deltaXFromPrevious-popX,
                 a.deltaYFromPrevious-popY, a.getDistanceFromPrevious() - popDistance);
 
+        if(distance < targetDistance){
+            distancePassed = distancePassed-distance;
+        }
+
+        //wraparound
         while(distance < targetDistance){
             i++; j++;
             c = wayPoints.get(i);
