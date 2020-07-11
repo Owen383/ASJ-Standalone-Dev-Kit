@@ -9,21 +9,36 @@ public class Path {
         private double deltaXFromPrevious;
         private double deltaYFromPrevious;
         private double distanceFromPrevious;
+        private double angleFromPrevious;
 
         private WayPoint(Point point, double deltaXFromPrevious, double deltaYFromPrevious, double distanceFromPrevious) {
             this.point = point;
             this.deltaXFromPrevious = deltaXFromPrevious;
             this.deltaYFromPrevious = deltaYFromPrevious;
             this.distanceFromPrevious = distanceFromPrevious;
+            if(deltaXFromPrevious!=0){
+                angleFromPrevious = Math.atan2(deltaYFromPrevious, deltaXFromPrevious);
+            }else{
+                angleFromPrevious = Math.PI/2;
+            }
         }
 
         public double getDistanceFromPrevious() {
             return distanceFromPrevious;
         }
-
         public String toString() {
             return "Point{" + "x=" + point.getX() + ", y=" + point.getY() + ", distance from previous = " + distanceFromPrevious + "}";
         }
+        public double getAngleFromPrevious(){
+            return angleFromPrevious;
+        }
+        public double getX(){
+            return point.getX();
+        }
+        public double getY(){
+            return point.getY();
+        }
+
         /**
          * Calculates the projection of the vector Vcurrent leading from the supplied current
          * point to this WayPoint onto the vector Vpath leading from the previous point on the path
@@ -66,7 +81,7 @@ public class Path {
 
             deltaXFromPrevious = rawPoints[i].getX() - j.getX();
             deltaYFromPrevious = rawPoints[i].getY() - j.getY();
-            distanceFromPrevious = Math.sqrt(deltaXFromPrevious*deltaXFromPrevious + deltaYFromPrevious*deltaYFromPrevious);
+            distanceFromPrevious = Math.sqrt(deltaXFromPrevious * deltaXFromPrevious + deltaYFromPrevious * deltaYFromPrevious);
 
             if(rawPoints[i].getX() != j.getX() || rawPoints[i].getY() != j.getY()) {
                 wayPoints.add(new WayPoint(rawPoints[i], deltaXFromPrevious, deltaYFromPrevious, distanceFromPrevious));
@@ -91,28 +106,69 @@ public class Path {
      * @return a point at the supplied look-ahead distance along the path from the supplied current position
      * Note that the point will usually be interpolated between the points that originally defined the Path
      */
-    public Path.WayPoint targetPoint(Point current, double lookAheadDistance) {
-        boolean b = true;
-        int i = 0;
-        double distance = 0;
+    public Path.WayPoint targetPoint(Point current, double targetDistance) {
+        int i = -1; int j = 0;
+        double distance;
+        double distancePassed = targetDistance;
+        double popY;
+        double popX;
+        double popDistance;
+        double distanceX;
+        double distanceY;
+        double finalDeltaX;
+        double finalDeltaY;
 
-        while(b && i<wayPoints.size()){
+        WayPoint a = new WayPoint(new Point(0,0),0,0,0);
+        WayPoint c = new WayPoint(new Point(0,0),0,0,0);
+        Point targetPoint;
+
+        while(i<wayPoints.size()-1){
             i++;
-            WayPoint a = wayPoints.get(i-1);
-            WayPoint c = wayPoints.get(i);
-            if (a.componentAlongPath(current) > 0) {
-               b = false;
+            a = wayPoints.get(i);
+            if(a.componentAlongPath(current) > 0){
+               break;
             }
         }
-        while(distance < lookAheadDistance){
-            WayPoint c = wayPoints.get(i);
+
+        distance = a.componentAlongPath(current);
+        popY = a.componentAlongPath(current) * Math.sin(a.getAngleFromPrevious());
+        popX = a.componentAlongPath(current) * Math.cos(a.getAngleFromPrevious());
+        current.distanceTraveled();
+        popDistance = Math.sqrt(popX*popX+popY*popY);
+        WayPoint shadow = new WayPoint(new Point (a.getX()-popX,a.getY()-popY), a.deltaXFromPrevious-popX,
+                a.deltaYFromPrevious-popY, a.getDistanceFromPrevious() - popDistance);
+
+        while(distance < targetDistance){
+            i++; j++;
+            c = wayPoints.get(i);
             distance = distance + c.getDistanceFromPrevious();
-            i++;
+            distancePassed = distancePassed - c.getDistanceFromPrevious();
         }
-        //a and c are our two brackets
 
+        if(j==0){
+            double ratio = a.getDistanceFromPrevious()/distancePassed;
+            distanceX = a.deltaXFromPrevious / ratio;
+            distanceY = a.deltaYFromPrevious / ratio;
+            distanceX = (a.deltaXFromPrevious - shadow.deltaXFromPrevious) - distanceX;
+            distanceY = (a.deltaYFromPrevious - shadow.deltaYFromPrevious) - distanceY;
+            Point target = new Point(a.getX() - distanceX,a.getY() - distanceY);
+            targetPoint = target;
+        }
 
-        return new WayPoint(new Point(0,0), 0.0, 0.0, 0.0);
+        else{
+            double ratio = c.getDistanceFromPrevious()/distancePassed;
+            distanceX = c.deltaXFromPrevious / ratio;
+            distanceY = c.deltaYFromPrevious / ratio;
+            distanceX = c.deltaXFromPrevious - distanceX;
+            distanceY = c.deltaYFromPrevious - distanceY;
+            Point target = new Point(c.getX() - distanceX,c.getY() - distanceY);
+            targetPoint = target;
+        }
+
+        finalDeltaX = targetPoint.getX() - current.getX();
+        finalDeltaY = targetPoint.getY() - current.getY();
+
+        return new WayPoint(targetPoint, finalDeltaX, finalDeltaY, Math.sqrt(finalDeltaX * finalDeltaX + finalDeltaY * finalDeltaY));
 
     }
 

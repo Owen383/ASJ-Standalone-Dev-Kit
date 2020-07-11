@@ -28,6 +28,10 @@ public class Point {
         return distance;
     }
 
+    public void distanceTraveled(){
+        System.out.println("cheeve man");
+    }
+
     public String getQuadrant(){
         if(x > 0 && y > 0){
             return "Quadrant 1";
