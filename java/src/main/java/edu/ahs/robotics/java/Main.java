@@ -3,18 +3,20 @@ package edu.ahs.robotics.java;
 public class Main {
     public static void main(String[] args){
 
-        Point a = new Point(-9, -9);
-        Point b = new Point(-8, -7);
-        Point a2 = new Point(-6, -4);
-        Point b2 = new Point(0, 0);
+        Point poopoo = new Point (9,3);
+        Point a = new Point(9, 9);
+        Point b = new Point(9, 5);
+        Point a2 = new Point(6, 4);
+        Point b2 = new Point(3, 6);
 
-        Point current = new Point(-7,-8);
+        Point current = new Point(7,8);
 
-        Point[] ab = new Point[4];
-        ab[0] = a;
-        ab[1] = b;
-        ab[2] = a2;
-        ab[3] = b2;
+        Point[] ab = new Point[5];
+        ab[0] = poopoo;
+        ab[1] = a;
+        ab[2] = b;
+        ab[3] = a2;
+        ab[4] = b2;
 
         LineSegment c = new LineSegment(a,b);
 
@@ -40,7 +42,7 @@ public class Main {
         dummy.printWayPoints();
         System.out.println(dummy.totalDistance());
 
-        dummy.printTargetPoint(current, .5);
+        dummy.printTargetPoint(current, 4);
 
     }
 }

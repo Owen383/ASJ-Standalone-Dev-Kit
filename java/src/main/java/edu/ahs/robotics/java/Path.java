@@ -18,8 +18,10 @@ public class Path {
             this.distanceFromPrevious = distanceFromPrevious;
             if(deltaXFromPrevious!=0){
                 angleFromPrevious = Math.atan2(deltaYFromPrevious, deltaXFromPrevious);
-            }else{
+            }else if(deltaYFromPrevious > 0){
                 angleFromPrevious = Math.PI/2;
+            }else{
+                angleFromPrevious = 3*Math.PI/2;
             }
         }
 
@@ -27,7 +29,7 @@ public class Path {
             return distanceFromPrevious;
         }
         public String toString() {
-            return "Point{" + "x=" + point.getX() + ", y=" + point.getY() + ", distance from previous = " + distanceFromPrevious + "}";
+            return "Point{" + "(" + point.getX() + ", " + point.getY() + "), distance from previous = " + distanceFromPrevious + "}";
         }
         public double getAngleFromPrevious(){
             return angleFromPrevious;
@@ -145,7 +147,7 @@ public class Path {
                 a.deltaYFromPrevious-popY, a.getDistanceFromPrevious() - popDistance);
 
         if(distance < targetDistance){
-            distancePassed = distancePassed-distance;
+            distancePassed = distancePassed - distance;
         }
 
         //wraparound
@@ -153,7 +155,10 @@ public class Path {
             i++; j++;
             c = wayPoints.get(i);
             distance = distance + c.getDistanceFromPrevious();
-            distancePassed = distancePassed - c.getDistanceFromPrevious();
+            if(distance < targetDistance){
+                distancePassed = distancePassed - c.getDistanceFromPrevious();
+            }
+
         }
 
         if(j==0){
@@ -172,6 +177,7 @@ public class Path {
             distanceY = c.deltaYFromPrevious / ratio;
             distanceX = c.deltaXFromPrevious - distanceX;
             distanceY = c.deltaYFromPrevious - distanceY;
+            System.out.println(c);
             Point target = new Point(c.getX() - distanceX,c.getY() - distanceY);
             targetPoint = target;
         }
