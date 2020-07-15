@@ -10,7 +10,7 @@ public class Path {
         private double deltaYFromPrevious;
         private double distanceFromPrevious;
         private double angleFromPrevious;
-
+ 
         private WayPoint(Point point, double deltaXFromPrevious, double deltaYFromPrevious, double distanceFromPrevious) {
             this.point = point;
             this.deltaXFromPrevious = deltaXFromPrevious;
@@ -63,6 +63,8 @@ public class Path {
 
     private ArrayList<WayPoint> wayPoints;
     double totalDistance = 0;
+    int nextWaypointIndex = 0;
+    WayPoint nextWaypoint = new WayPoint(new Point(0,0),0,0,0);
     /**
      * @param rawPoints Array of X,Y points.  Consecutive duplicate points are discarded
      *                  A path must have at least 2 non-identical points
@@ -112,78 +114,68 @@ public class Path {
      * @return a point at the supplied look-ahead distance along the path from the supplied current position
      * Note that the point will usually be interpolated between the points that originally defined the Path
      */
-    public Path.WayPoint targetPoint(Point current, double targetDistance) {
-        int i = -1; int j = 0;
-        double distance;
-        double distancePassed = targetDistance;
-        double popY;
-        double popX;
-        double popDistance;
-        double distanceX;
-        double distanceY;
-        double finalDeltaX;
-        double finalDeltaY;
+    public Path.WayPoint targetPoint(Point robotPosition, double targetDistance) {
 
-        WayPoint a = new WayPoint(new Point(0,0),0,0,0);
-        WayPoint c = new WayPoint(new Point(0,0),0,0,0);
-        Point targetPoint;
-
-        while(i<wayPoints.size()-1){
-            i++;
-            a = wayPoints.get(i);
-            System.out.println(a.componentAlongPath(current)+" "+i);
-            if(a.componentAlongPath(current) > 0){
+        while(nextWaypointIndex < wayPoints.size()){
+            nextWaypoint = wayPoints.get(nextWaypointIndex);
+            System.out.println(nextWaypoint.componentAlongPath(robotPosition)+" "+ nextWaypointIndex);
+            if(nextWaypoint.componentAlongPath(robotPosition) > 0){
                break;
             }
+            nextWaypointIndex++;
         }
 
         //trig stuff
-        distance = a.componentAlongPath(current);
-        popY = a.componentAlongPath(current) * Math.sin(a.getAngleFromPrevious());
-        popX = a.componentAlongPath(current) * Math.cos(a.getAngleFromPrevious());
-        current.distanceTraveled();
-        popDistance = Math.sqrt(popX*popX+popY*popY);
-        WayPoint shadow = new WayPoint(new Point (a.getX()-popX,a.getY()-popY), a.deltaXFromPrevious-popX,
-                a.deltaYFromPrevious-popY, a.getDistanceFromPrevious() - popDistance);
+        double distance = nextWaypoint.componentAlongPath(robotPosition);
+        double dYcomponent = nextWaypoint.componentAlongPath(robotPosition) * Math.sin(nextWaypoint.getAngleFromPrevious());
+        double dXcomponent = nextWaypoint.componentAlongPath(robotPosition) * Math.cos(nextWaypoint.getAngleFromPrevious());
+        robotPosition.distanceTraveled();
+        WayPoint shadow = new WayPoint(new Point (nextWaypoint.getX()-dXcomponent, nextWaypoint.getY()-dYcomponent), nextWaypoint.deltaXFromPrevious-dXcomponent,
+                nextWaypoint.deltaYFromPrevious-dYcomponent, nextWaypoint.getDistanceFromPrevious() - distance);
 
+        double distancePassed = targetDistance;
         if(distance < targetDistance){
             distancePassed = distancePassed - distance;
         }
 
+        int j = 0;
+        WayPoint waypointAfterTarget = new WayPoint(new Point(0,0),0,0,0);
         //wraparound
         while(distance < targetDistance){
-            i++; j++;
-            c = wayPoints.get(i);
-            distance = distance + c.getDistanceFromPrevious();
+            nextWaypointIndex++; j++;
+            waypointAfterTarget = wayPoints.get(nextWaypointIndex);
+            distance = distance + waypointAfterTarget.getDistanceFromPrevious();
             if(distance < targetDistance){
-                distancePassed = distancePassed - c.getDistanceFromPrevious();
+                distancePassed = distancePassed - waypointAfterTarget.getDistanceFromPrevious();
             }
 
         }
 
+        Point targetPoint;
+
         if(j==0){
-            double ratio = a.getDistanceFromPrevious()/distancePassed;
-            distanceX = a.deltaXFromPrevious / ratio;
-            distanceY = a.deltaYFromPrevious / ratio;
-            distanceX = (a.deltaXFromPrevious - shadow.deltaXFromPrevious) - distanceX;
-            distanceY = (a.deltaYFromPrevious - shadow.deltaYFromPrevious) - distanceY;
-            Point target = new Point(a.getX() - distanceX,a.getY() - distanceY);
+            double ratio = nextWaypoint.getDistanceFromPrevious()/distancePassed;
+            double distanceX = nextWaypoint.deltaXFromPrevious / ratio;
+            double distanceY = nextWaypoint.deltaYFromPrevious / ratio;
+            distanceX = (nextWaypoint.deltaXFromPrevious - shadow.deltaXFromPrevious) - distanceX;
+            distanceY = (nextWaypoint.deltaYFromPrevious - shadow.deltaYFromPrevious) - distanceY;
+            Point target = new Point(nextWaypoint.getX() - distanceX, nextWaypoint.getY() - distanceY);
             targetPoint = target;
         }
 
         else{
-            double ratio = c.getDistanceFromPrevious()/distancePassed;
-            distanceX = c.deltaXFromPrevious / ratio;
-            distanceY = c.deltaYFromPrevious / ratio;
-            distanceX = c.deltaXFromPrevious - distanceX;
-            distanceY = c.deltaYFromPrevious - distanceY;
-            System.out.println(c);
-            Point target = new Point(c.getX() - distanceX,c.getY() - distanceY);
+            double ratio = waypointAfterTarget.getDistanceFromPrevious()/distancePassed;
+            double distanceX = waypointAfterTarget.deltaXFromPrevious / ratio;
+            double distanceY = waypointAfterTarget.deltaYFromPrevious / ratio;
+            distanceX = waypointAfterTarget.deltaXFromPrevious - distanceX;
+            distanceY = waypointAfterTarget.deltaYFromPrevious - distanceY;
+            System.out.println(waypointAfterTarget);
+            Point target = new Point(waypointAfterTarget.getX() - distanceX,waypointAfterTarget.getY() - distanceY);
             targetPoint = target;
         }
 
-        finalDeltaX = targetPoint.getX() - current.getX();
-        finalDeltaY = targetPoint.getY() - current.getY();
+        double finalDeltaX = targetPoint.getX() - robotPosition.getX();
+        double finalDeltaY = targetPoint.getY() - robotPosition.getY();
 
         return new WayPoint(targetPoint, finalDeltaX, finalDeltaY, Math.sqrt(finalDeltaX * finalDeltaX + finalDeltaY * finalDeltaY));
 
